@@ -17,8 +17,8 @@ A_S         = 0;    % scales contribution of random input to activity
 connected   = 1;    % builds a connectivity matrix between nodes; 0 = unconnected
 dir         = 1;    % 1 = Forward only; 2 = Forward and Backward
 steps       = 5;    % How many simulation steps 
-Pvary       = 'c_EG';         
-Prange      = linspace(0, 10, 5); 
+Pvary       = 'P';         
+Prange      = linspace(0, 5, 5); 
 
 % Standard nodes
 %--------------------------------------------------------------------------
@@ -26,7 +26,7 @@ E  	= glia_modelparams('hopf');
 
 EE  = E.EE;             EI  = E.EI;
 II  = E.II;             IE  = E.IE;
-EG  = 3;                GE  = 1;
+EG  = 5;              GE  = 1;
 P   = 1;                Q   = E.Q; 
 
 % Epileptic node
@@ -41,7 +41,7 @@ eP   = E.P;           	eQ   = E.Q;
 % ODE options
 %--------------------------------------------------------------------------
 options     = odeset('MaxStep',0.5);
-t_range     = 1:.1:500;
+t_range     = 1:.01:50;
 x_ini       = rand(Ns * 3,1) / 10;  % 0 -> near lower fix point; 
 
 
@@ -157,7 +157,7 @@ end
 % Bifurcation plot
 %--------------------------------------------------------------------------
 xNo     = 1:Ns;
-xNo     = xNo * 3 - 2 ;
+xNo     = xNo * 3 - 1 ;
 
 clear Flo Fhi Blo Bhi
 for f = 1:length(B)
@@ -181,7 +181,7 @@ for i = 1:length(xNo)
     scatter(Prange, Flo(:,i), 50, cols(i,:), 'filled'); hold on
     scatter(Prange, Fhi(:,i), 50, cols(i,:), 'filled');
     title(['Forward simulation, parameter ' Pvary]);
-    xlim([-.5 8]);
+    xlim([min(Prange)-0.5 max(Prange)+0.5]);
     
     if exist('Blo') 
         subplot(2,1,2);
@@ -189,7 +189,7 @@ for i = 1:length(xNo)
         scatter(thisPR, Blo(:,i), 50, cols(i,:), 'filled'); hold on
         scatter(thisPR, Bhi(:,i), 50, cols(i,:), 'filled');
         title(['Backward simulation, parameter ' Pvary]);
-        xlim([-.5 8]);
+        xlim([-.5 max(Prange)+0.5]);
     end
     
 end
@@ -197,9 +197,9 @@ end
 %% Time series plot
 %--------------------------------------------------------------------------
 clf
-ploti   = 1;
+ploti   = 5;
 Nruns   = size(B,1);
-Ei      = 3*[1:Ns] - 2;
+Ei      = 3*[1:Ns] - 0;
 
 subplot(1,7,[1:6])
 
