@@ -9,6 +9,10 @@ E      = thisi;     % excitatory populations
 I      = thisi+1;   % inhibitory populations
 G      = thisi+2;   % glia cell populations
 
+if ~isfield(T, 'sync'),     T.sync = 0;   
+else,                       sync = T.sync; 
+end
+
 % Connectivity parameters
 %==========================================================================
 % Excitatory to excitatory connectivity: extrinsic and intrinsic
@@ -55,26 +59,19 @@ else
     c_II = T.c_II;
 end
 
-% Excitatory to glia connectivity: intrinsic
-%--------------------------------------------------------------------------
-if ~isfield(T, 'c_II')
-    c_II    = zeros(length(E));
-    for c = 1:length(c_II)
-        c_II(c,c) = 0;
-    end
-else
-    c_II = T.c_II;
-end
-
 % Glia to excitatory connectivity: intrinsic
 %--------------------------------------------------------------------------
 if ~isfield(T, 'c_GE')
     c_GE    = zeros(length(E));
-    for c = 1:length(c_GE)
-        c_GE(c,c) = 0;
-    end
-else
-    c_GE = T.c_GE;
+    for c = 1:length(c_GE), c_GE(c,c) = 0;  end
+else,    c_GE = T.c_GE;                     end
+
+if T.sync
+    val             = c_GE(1,1); 
+    c_GE            = zeros(size(c_GE)); 
+    x(G(2:end))     = zeros(1,length(G)-1);
+%     c_GE(1,:)    = ones(1,length(c_GE)) * val;
+    c_GE(:,1)    = ones(1,length(c_GE)) * val;
 end
 
 % Excitatory to glia connectivity: intrinsic
@@ -88,6 +85,14 @@ else
     c_EG = T.c_EG;
 end
 
+if T.sync
+    val             = c_EG(1,1) / length(E); 
+    c_EG            = zeros(length(E)); 
+    x(G(2:end))     = zeros(1,length(G)-1);
+    c_EG(1,:)       = ones(1,length(E)) * val;
+%     c_EG(:,1)       = ones(1,length(E)) * val;
+end
+
 
 
 % Other model parameters
@@ -99,9 +104,9 @@ if ~isfield(T, 'Q'), Q = ones(length(E),1) * (-2);      else,   Q = T.Q;    end;
 
 % Time constants
 %--------------------------------------------------------------------------
-tau(1,1)    = .013;
-tau(1,2)    = .013;
-tau(1,3)    = .13;
+tau(1,1)    = .13;
+tau(1,2)    = .13;
+tau(1,3)    = 2.0;
 
 % Contribution of random noise
 %--------------------------------------------------------------------------
