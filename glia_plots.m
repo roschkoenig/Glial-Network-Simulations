@@ -2,7 +2,7 @@ clear F
 fs          = filesep;
 F.base      = '/Users/roschkoenig/Dropbox/Research/1909 CB Dispatch Sims';
 F.scripts   = [F.base fs 'Network Sims'];
-
+addpath(genpath(F.base)); 
 load([F.base fs 'Sims.mat']); 
 
 %% State space plot
@@ -60,15 +60,54 @@ end
 
 %% Plot example time series
 %--------------------------------------------------------------------------
+exps = [40, 90, 115]; 
+for ex = 1:length(exps),    subplot(length(exps), 1, ex)
+    c   = 1;
+    b   = exps(ex); 
+    xl  = size(C{1}(b,1).x,1); xr = fix(xl-15000):2:xl;
 
-b = 93; % 92
-xl = size(C{1}(b,1).x,1); xr = fix(xl-5000):2:xl;
+    eid = [1:size(C{1}(1).x,2)/3] * 3 - 2; 
+    e   = C{c}(b,1).x(xr,eid);
+    for k = 1:size(e,2), plot(e(:,k) + k/3, 'color', 'k'), hold on; end
+end
+
+%% Plot simulations with different temporal profiles
+%--------------------------------------------------------------------------
+exps = [50,100];
+
+for ex = 1:length(exps),    subplot(length(exps), 1, ex); 
+    c       = 1;
+    B       = C{c}(exps(ex),1); 
+    xini    = B.x(50,:); 
+    T       = B.T; 
+    T.t     = B.t(1:3000); 
+    P_t             = 1:length(T.t); %ones(1,length(t)) * 0;
+%     P_t(1001:1500)  = ones(1,500) * 0.5;
+    T.P_t           = P_t;
+    T.A_S = 0; 
+    
+%     Q_t             = ones(1,length(t)) *0; 
+%     Q_t(1001:1500)  = ones(1,500) * -2; 
+%     T.Q_t           = Q_t; 
+    
+    options     = odeset('MaxStep',0.5);
+    [t,x]       = ode45(@glia_cortsheet, T.t, xini, options, T);
+    
+    plot(x(:,10)); 
+end
+
+%%
 cols = (cbrewer('seq', 'YlOrRd', length(xr)));
 
-e = C{1}(b,1).x(xr,10);
-i = C{1}(b,1).x(xr,11);
-g = C{1}(b,1).x(xr,1);
+e = C{c}(b,1).x(xr,10);
+i = C{c}(b,1).x(xr,11);
+ef = C{1}(b,1).x(xr,1); 
+g = C{c}(b,1).x(xr,3);
 colormap(cols)
-scatter3(e,i,g, 20, g, 'filled')
-view([-30, 22]); 
+subplot(2,1,1)
+    scatter3(e,i,g, 50, g, 'filled')
+    view([-30, 22]); 
+subplot(2,1,2)
+    plot(zscore(g)); hold on
+    plot(zscore(e))
 

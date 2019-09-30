@@ -99,8 +99,16 @@ end
 %==========================================================================
 % Baseline activation
 %--------------------------------------------------------------------------
-if ~isfield(T, 'P'), P = ones(length(E),1) * (1.5);  	else, 	P = T.P;    end;  
-if ~isfield(T, 'Q'), Q = ones(length(E),1) * (-2);      else,   Q = T.Q;    end;
+if ~isfield(T, 'P'),    P = ones(length(E),1) * (1.5);  	
+else, try,              [val tid] = min(abs(T.t - t)); 
+                        P = ones(length(E),1) * T.P_t(tid);    
+      catch,            P = T.P;  end; 
+end 
+
+if ~isfield(T, 'Q'),    Q = ones(length(E),1) * (-2);      
+else,   try,            Q = ones(length(E),1) * T.Q_t(t);  
+        catch,          Q = T.Q;    end
+end
 
 % Time constants
 %--------------------------------------------------------------------------
@@ -118,7 +126,7 @@ if ~isfield(T, 'A_S'),  A_S = 0;    else,   A_S = T.A_S;    end
 dxdt(E) = ( - x(E) + sig(c_EE * x(E) + c_IE * x(I) + c_GE * x(G) + P + A_S * randn(length(E),1)) ) / tau(:,1);
 dxdt(I) = ( - x(I) + sig(c_EI * x(E) + c_II * x(I) + Q) ) / tau(:,2);
 dxdt(G) = ( - x(G) + c_EG * x(E)) / tau(:,3);
- 
+% plot(dxdt(E)), hold on, pause
 end
 
 
