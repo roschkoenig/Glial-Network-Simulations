@@ -105,11 +105,19 @@ else, try,              [val tid] = min(abs(T.t - t));
       catch,            P = T.P;  end; 
 end 
 
-if ~isfield(T, 'Q'),    Q = ones(length(E),1) * (-2);      
-else,   try,            Q = ones(length(E),1) * T.Q_t(t);  
+if ~isfield(T, 'Q'),    Q = ones(length(E),1) * (-2); 
+else,   try,            [val tid] = min(abs(T.t - t)); 
+                        Q = ones(length(E),1) * T.Q_t(tid);
         catch,          Q = T.Q;    end
 end
 
+if ~isfield(T, 'R'),    R = zeros(length(E),1); 
+else,   try,            [val tid] = min(abs(T.t - t)); 
+                        R = ones(length(E),1) * T.R_t(tid);
+        catch,          R = T.R;    end
+end
+
+% if R(1) > 0; disp('yay'); end
 % Time constants
 %--------------------------------------------------------------------------
 tau(1,1)    = .13;
@@ -125,7 +133,7 @@ if ~isfield(T, 'A_S'),  A_S = 0;    else,   A_S = T.A_S;    end
 %==========================================================================
 dxdt(E) = ( - x(E) + sig(c_EE * x(E) + c_IE * x(I) + c_GE * x(G) + P + A_S * randn(length(E),1)) ) / tau(:,1);
 dxdt(I) = ( - x(I) + sig(c_EI * x(E) + c_II * x(I) + Q) ) / tau(:,2);
-dxdt(G) = ( - x(G) + c_EG * x(E)) / tau(:,3);
+dxdt(G) = ( - x(G) + c_EG * x(E) + R) / tau(:,3);
 % plot(dxdt(E)), hold on, pause
 end
 
